@@ -5,7 +5,7 @@ using SpecDrift.Core.Model;
 using SpecDrift.Core.Reporting;
 using SpecDrift.Core.SemanticReview;
 using SpecDrift.Core.SpecReading;
-using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 var parseResult = CliOptionsParser.Parse(args, Console.Error);
 if (parseResult.Options is null)
@@ -100,10 +100,6 @@ catch (Exception ex)
     return 2;
 }
 
-// Sample config file (~/.specdrift/config.json):
-// {
-//   "apiKey": "your-anthropic-api-key"
-// }
 static string? ReadApiKey()
 {
     var apiKey = Environment.GetEnvironmentVariable("SPECDRIFT_API_KEY");
@@ -112,30 +108,11 @@ static string? ReadApiKey()
         return apiKey;
     }
 
-    var configPath = Environment.GetEnvironmentVariable("SPECDRIFT_CONFIG_FILE")
-        ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".specdrift",
-            "config.json");
+    var configuration = new ConfigurationBuilder()
+        .SetBasePath(AppContext.BaseDirectory)
+        .AddJsonFile("appsettings.json", optional: true)
+        .AddEnvironmentVariables()
+        .Build();
 
-    if (!File.Exists(configPath))
-    {
-        return null;
-    }
-
-    try
-    {
-        using var document = JsonDocument.Parse(File.ReadAllText(configPath));
-        return document.RootElement.TryGetProperty("apiKey", out var configuredKey)
-            ? configuredKey.GetString()
-            : null;
-    }
-    catch (IOException)
-    {
-        return null;
-    }
-    catch (JsonException)
-    {
-        return null;
-    }
+    return configuration["SpecDrift:ApiKey"] ?? configuration["ApiKey"];
 }
