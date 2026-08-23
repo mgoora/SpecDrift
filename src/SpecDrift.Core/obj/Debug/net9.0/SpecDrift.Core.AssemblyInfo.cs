@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SpecDrift.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+92f8004e22137ae966b45cc5c2c38678a6f0cd7f")]
 [assembly: System.Reflection.AssemblyProductAttribute("SpecDrift.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SpecDrift.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

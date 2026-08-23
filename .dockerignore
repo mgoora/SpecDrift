@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+.git/
+.gitignore
+*.user
+samples/
+tests/
+*.md
+Dockerfile
+.dockerignore

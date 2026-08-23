@@ -13,10 +13,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B19C43B8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpecDrift.Cli.Tests", "tests\SpecDrift.Cli.Tests\SpecDrift.Cli.Tests.csproj", "{9BFA3CA0-B822-4885-914E-731874FF263F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpecDrift.Core.Tests", "tests\SpecDrift.Core.Tests\SpecDrift.Core.Tests.csproj", "{46E091C8-95AA-462D-AEBC-C749552763C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3CEA8DBF-A6A8-4073-B1B8-E25A6F1E03C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -31,13 +36,15 @@ Global
 		{9BFA3CA0-B822-4885-914E-731874FF263F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BFA3CA0-B822-4885-914E-731874FF263F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BFA3CA0-B822-4885-914E-731874FF263F}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
+		{46E091C8-95AA-462D-AEBC-C749552763C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46E091C8-95AA-462D-AEBC-C749552763C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46E091C8-95AA-462D-AEBC-C749552763C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46E091C8-95AA-462D-AEBC-C749552763C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3CEA8DBF-A6A8-4073-B1B8-E25A6F1E03C1} = {78BC867F-CAA9-493B-9A87-9D5E2C6F6354}
 		{B353B5C6-B982-42C2-8022-FF6A8BC5588A} = {78BC867F-CAA9-493B-9A87-9D5E2C6F6354}
 		{9BFA3CA0-B822-4885-914E-731874FF263F} = {B19C43B8-F6F3-45A1-ACEB-94EF0EFF0876}
+		{46E091C8-95AA-462D-AEBC-C749552763C6} = {B19C43B8-F6F3-45A1-ACEB-94EF0EFF0876}
 	EndGlobalSection
 EndGlobal

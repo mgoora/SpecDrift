@@ -1,4 +1,10 @@
 using SpecDrift.Cli;
+using SpecDrift.Core.CodeReading;
+using SpecDrift.Core.Comparing;
+using SpecDrift.Core.Model;
+using SpecDrift.Core.Reporting;
+using SpecDrift.Core.SemanticReview;
+using SpecDrift.Core.SpecReading;
 
 var parseResult = CliOptionsParser.Parse(args, Console.Error);
 if (parseResult.Options is null)
@@ -16,13 +22,78 @@ if (!options.NoLlm && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("S
     return 2;
 }
 
-// Slices 2-9 (spec reader, code reader, comparer, report writer, LLM review) don't exist
-// yet. This just proves the argument contract is wired end to end.
-Console.WriteLine($"Spec:         {options.Spec.FullName}");
-Console.WriteLine($"Project:      {options.Project.FullName}");
-Console.WriteLine($"Dialect:      {(options.Dialect is null ? "(auto-detect)" : options.Dialect.ToString())}");
-Console.WriteLine($"Output:       {(options.Out is null ? "(stdout)" : options.Out.FullName)}");
-Console.WriteLine($"LLM enabled:  {!options.NoLlm}");
-Console.WriteLine($"Min severity: {options.MinSeverity}");
+try
+{
+    var dialectSource = options.Dialect is null ? DialectSource.Detected : DialectSource.Specified;
+    var dialect = options.Dialect ?? DialectDetector.Detect(options.Project.FullName);
+    var descriptor = dialect switch
+    {
+        DialectChoice.WebApi2 => DialectDescriptors.WebApi2,
+        DialectChoice.Core => DialectDescriptors.Core,
+        _ => throw new NotSupportedException($"Unsupported dialect: {dialect}")
+    };
 
-return 0;
+    SpecReadResult specResult;
+    using (var specStream = options.Spec.OpenRead())
+    {
+        specResult = SpecReader.Read(specStream);
+    }
+
+    var codeResult = CodeReader.Read(options.Project.FullName, descriptor);
+    var comparison = Comparer.Compare(specResult, codeResult, descriptor.Dialect);
+
+    var allFindings = new List<DriftFinding>(comparison.Findings);
+    var limitations = new List<string>(codeResult.Limitations);
+
+    if (options.NoLlm)
+    {
+        limitations.Add("Semantic review (SD100) was skipped (--no-llm).");
+    }
+    else
+    {
+        using var llmClient = new AnthropicLlmClient(Environment.GetEnvironmentVariable("SPECDRIFT_API_KEY")!);
+        var semanticFindings = await SemanticReviewer.ReviewAsync(comparison.SemanticQuestions, llmClient, descriptor.Dialect);
+        allFindings.AddRange(semanticFindings);
+    }
+
+    var findings = allFindings
+        .Where(f => f.Severity >= options.MinSeverity)
+        .OrderByDescending(f => f.Severity)
+        .ThenBy(f => f.Code, StringComparer.Ordinal)
+        .ThenBy(f => f.Title, StringComparer.Ordinal)
+        .ToList();
+
+    var report = ReportWriter.Write(new ReportContext(descriptor.Dialect, dialectSource, specResult.SpecVersion, findings, limitations));
+
+    if (options.Out is null)
+    {
+        Console.Write(report);
+    }
+    else
+    {
+        File.WriteAllText(options.Out.FullName, report);
+        Console.WriteLine($"Report written to {options.Out.FullName}");
+    }
+
+    return findings.Count > 0 ? 1 : 0;
+}
+catch (SpecParseException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 2;
+}
+catch (DialectDetectionException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 2;
+}
+catch (LlmClientException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 2;
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine($"Spec Drift failed: {ex.Message}");
+    return 2;
+}

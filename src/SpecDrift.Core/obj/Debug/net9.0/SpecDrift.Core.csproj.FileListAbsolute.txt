@@ -9,3 +9,5 @@ C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.dll
 C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\refint\SpecDrift.Core.dll
 C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.pdb
 C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\ref\SpecDrift.Core.dll
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.csproj.AssemblyReference.cache
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.sourcelink.json

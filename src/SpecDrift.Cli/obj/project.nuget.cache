@@ -1,11 +1,24 @@
 {
   "version": 2,
-  "dgSpecHash": "dmg/B4LT07c=",
+  "dgSpecHash": "zuc2T5vnB0Q=",
   "success": true,
   "projectFilePath": "C:\\projects\\SpecDrift\\src\\SpecDrift.Cli\\SpecDrift.Cli.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Mariusz\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\5.9.0-1.26328.17\\microsoft.codeanalysis.analyzers.5.9.0-1.26328.17.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\microsoft.codeanalysis.common\\5.9.0\\microsoft.codeanalysis.common.5.9.0.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\microsoft.codeanalysis.csharp\\5.9.0\\microsoft.codeanalysis.csharp.5.9.0.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\microsoft.openapi\\1.6.31\\microsoft.openapi.1.6.31.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\microsoft.openapi.readers\\1.6.31\\microsoft.openapi.readers.1.6.31.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\sharpyaml\\2.1.5\\sharpyaml.2.1.5.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.buffers\\4.6.1\\system.buffers.4.6.1.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.collections.immutable\\10.0.1\\system.collections.immutable.10.0.1.nupkg.sha512",
     "C:\\Users\\Mariusz\\.nuget\\packages\\system.commandline\\3.0.0-preview.7.26381.103\\system.commandline.3.0.0-preview.7.26381.103.nupkg.sha512",
-    "C:\\Users\\Mariusz\\.nuget\\packages\\system.memory\\4.6.3\\system.memory.4.6.3.nupkg.sha512"
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.memory\\4.6.3\\system.memory.4.6.3.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.numerics.vectors\\4.6.1\\system.numerics.vectors.4.6.1.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.reflection.metadata\\10.0.1\\system.reflection.metadata.10.0.1.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.1.2\\system.runtime.compilerservices.unsafe.6.1.2.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.text.encoding.codepages\\8.0.0\\system.text.encoding.codepages.8.0.0.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.threading.tasks.extensions\\4.6.3\\system.threading.tasks.extensions.4.6.3.nupkg.sha512"
   ],
   "logs": []
 }
