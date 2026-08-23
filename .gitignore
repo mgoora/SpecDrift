@@ -1,0 +1,47 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# JetBrains Rider / ReSharper
+.idea/
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# User-specific files
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Logs
+*.log
+
+# Test results
+TestResults/
+*.trx
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Environment / secrets
+.env
+.env.*
+appsettings.Development.json
+
+# Publish output
+publish/
+
+# OS files
+.DS_Store
+Thumbs.db

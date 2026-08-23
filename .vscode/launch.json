@@ -13,7 +13,8 @@
             "args": [
                 "--spec", "C:\\projects\\SpecDrift\\samples\\openapi.yaml",
                 "--project", "C:\\projects\\SpecDrift\\samples\\DriftyApi.Core",
-                "--no-llm", "true"
+                "--no-llm", "true",
+                "--dialect", "WebApi2"
             ]
         }
 

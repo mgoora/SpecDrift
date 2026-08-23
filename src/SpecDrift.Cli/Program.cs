@@ -5,6 +5,7 @@ using SpecDrift.Core.Model;
 using SpecDrift.Core.Reporting;
 using SpecDrift.Core.SemanticReview;
 using SpecDrift.Core.SpecReading;
+using System.Text.Json;
 
 var parseResult = CliOptionsParser.Parse(args, Console.Error);
 if (parseResult.Options is null)
@@ -13,8 +14,9 @@ if (parseResult.Options is null)
 }
 
 var options = parseResult.Options;
+var apiKey = ReadApiKey();
 
-if (!options.NoLlm && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SPECDRIFT_API_KEY")))
+if (!options.NoLlm && string.IsNullOrEmpty(apiKey))
 {
     Console.Error.WriteLine(
         "SPECDRIFT_API_KEY is not set. Semantic review (LLM-assisted SD100) needs it; " +
@@ -51,7 +53,7 @@ try
     }
     else
     {
-        using var llmClient = new AnthropicLlmClient(Environment.GetEnvironmentVariable("SPECDRIFT_API_KEY")!);
+        using var llmClient = new AnthropicLlmClient(apiKey!);
         var semanticFindings = await SemanticReviewer.ReviewAsync(comparison.SemanticQuestions, llmClient, descriptor.Dialect);
         allFindings.AddRange(semanticFindings);
     }
@@ -96,4 +98,44 @@ catch (Exception ex)
 {
     Console.Error.WriteLine($"Spec Drift failed: {ex.Message}");
     return 2;
+}
+
+// Sample config file (~/.specdrift/config.json):
+// {
+//   "apiKey": "your-anthropic-api-key"
+// }
+static string? ReadApiKey()
+{
+    var apiKey = Environment.GetEnvironmentVariable("SPECDRIFT_API_KEY");
+    if (!string.IsNullOrWhiteSpace(apiKey))
+    {
+        return apiKey;
+    }
+
+    var configPath = Environment.GetEnvironmentVariable("SPECDRIFT_CONFIG_FILE")
+        ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".specdrift",
+            "config.json");
+
+    if (!File.Exists(configPath))
+    {
+        return null;
+    }
+
+    try
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+        return document.RootElement.TryGetProperty("apiKey", out var configuredKey)
+            ? configuredKey.GetString()
+            : null;
+    }
+    catch (IOException)
+    {
+        return null;
+    }
+    catch (JsonException)
+    {
+        return null;
+    }
 }
