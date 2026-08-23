@@ -1,0 +1,11 @@
+C:\projects\SpecDrift\src\SpecDrift.Core\bin\Debug\net9.0\SpecDrift.Core.deps.json
+C:\projects\SpecDrift\src\SpecDrift.Core\bin\Debug\net9.0\SpecDrift.Core.dll
+C:\projects\SpecDrift\src\SpecDrift.Core\bin\Debug\net9.0\SpecDrift.Core.pdb
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.AssemblyInfoInputs.cache
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.AssemblyInfo.cs
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.csproj.CoreCompileInputs.cache
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.dll
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\refint\SpecDrift.Core.dll
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\SpecDrift.Core.pdb
+C:\projects\SpecDrift\src\SpecDrift.Core\obj\Debug\net9.0\ref\SpecDrift.Core.dll

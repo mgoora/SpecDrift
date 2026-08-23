@@ -1,0 +1,460 @@
+openapi: 3.0.3
+info:
+  title: DriftyApi
+  description: >-
+    Client KYC (Know Your Customer) registry for onboarding and maintaining
+    corporate and institutional counterparties. Exposes lookup, creation,
+    partial update, removal, and search over client records and their
+    supporting due-diligence documents.
+  version: 1.0.0
+servers:
+  - url: https://localhost/DriftyApi
+    description: Local IIS Express instance
+tags:
+  - name: Clients
+    description: Client KYC records and their supporting documents.
+
+paths:
+  /api/clients/{id}:
+    get:
+      operationId: getClient
+      tags: [Clients]
+      summary: Retrieve a client
+      description: >-
+        Returns the full KYC record for a single client, including every
+        document currently on file for it.
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: The client record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '404':
+          description: No client exists with the given ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    patch:
+      operationId: updateClient
+      tags: [Clients]
+      summary: Partially update a client
+      description: >-
+        Applies a partial update to an existing client using JSON Merge
+        Patch (RFC 7386) semantics: only the fields present in the request
+        body are changed, and a field explicitly set to `null` clears it
+        where the field is nullable. Fields omitted from the request body
+        are left untouched.
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/ClientUpdate'
+      responses:
+        '200':
+          description: The client record after the patch has been applied.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          description: The merge patch document is malformed or produces an invalid client.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: No client exists with the given ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+    delete:
+      operationId: deleteClient
+      tags: [Clients]
+      summary: Remove a client
+      description: >-
+        Permanently removes the client record, and every document attached
+        to it, from the registry. This action cannot be undone; once a
+        client has been deleted its ID may not be looked up again.
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '204':
+          description: The client was removed.
+        '403':
+          description: >-
+            The caller is not permitted to remove this client, for example
+            because it has a status that requires supervisory sign-off
+            before removal.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: No client exists with the given ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/clients:
+    post:
+      operationId: createClient
+      tags: [Clients]
+      summary: Create a client
+      description: >-
+        Registers a new client in the KYC registry. The server assigns the
+        identifier; it must not be supplied in the request. Fails if the
+        LEI is malformed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientCreate'
+      responses:
+        '201':
+          description: The client was created.
+          headers:
+            Location:
+              description: URL of the newly created client.
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          description: The request body failed validation.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/clients/{id}/documents:
+    get:
+      operationId: listClientDocuments
+      tags: [Clients]
+      summary: List a client's documents
+      description: >-
+        Returns every due-diligence document currently on file for the
+        given client, without the surrounding client record.
+      parameters:
+        - $ref: '#/components/parameters/ClientId'
+      responses:
+        '200':
+          description: The client's documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        '404':
+          description: No client exists with the given ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/clients/search:
+    get:
+      operationId: searchClients
+      tags: [Clients]
+      summary: Search clients
+      description: >-
+        Returns a page of clients matching the supplied filters. Filters
+        are combined with AND; a filter that is omitted does not restrict
+        the results.
+      parameters:
+        - name: companyName
+          in: query
+          required: false
+          description: Partial, case-insensitive match against the company name.
+          schema:
+            type: string
+        - name: lei
+          in: query
+          required: false
+          description: Exact match against the client's Legal Entity Identifier.
+          schema:
+            type: string
+            pattern: '^[A-Z0-9]{18}[0-9]{2}$'
+        - name: kycSegment
+          in: query
+          required: false
+          description: Restrict results to clients in this KYC segment.
+          schema:
+            $ref: '#/components/schemas/KycSegment'
+        - name: kycStatus
+          in: query
+          required: false
+          description: Restrict results to clients in this KYC status.
+          schema:
+            $ref: '#/components/schemas/KycStatus'
+        - name: page
+          in: query
+          required: false
+          description: One-based page number to return.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of results per page.
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: A page of matching clients.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientSearchResult'
+        '400':
+          description: A filter or paging parameter failed validation.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  parameters:
+    ClientId:
+      name: id
+      in: path
+      required: true
+      description: The client's server-assigned identifier.
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    KycSegment:
+      type: string
+      description: The regulatory segment the client is onboarded under.
+      enum: [Retail, Corporate, Institutional, FinancialInstitution]
+
+    KycStatus:
+      type: string
+      description: Where the client currently sits in the KYC lifecycle.
+      enum: [NotStarted, InProgress, PendingReview, Approved, Rejected, Archived]
+
+    RiskLevel:
+      type: string
+      description: The client's assessed risk rating.
+      enum: [Low, Medium, High, Prohibited]
+
+    DocumentGrouping:
+      type: string
+      description: The due-diligence category a document belongs to.
+      enum: [Identity, Ownership, Financial, Regulatory]
+
+    DocumentType:
+      type: string
+      description: The specific kind of document supplied.
+      enum:
+        - CertificateOfIncorporation
+        - ArticlesOfAssociation
+        - AuditedAccounts
+        - W8BEN
+        - PassportCopy
+        - UtilityBill
+
+    Document:
+      type: object
+      description: A single due-diligence document held against a client.
+      required: [name, grouping, type]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: File name or label of the document.
+        grouping:
+          $ref: '#/components/schemas/DocumentGrouping'
+        type:
+          $ref: '#/components/schemas/DocumentType'
+
+    Client:
+      type: object
+      description: A single client's KYC record.
+      required:
+        - id
+        - companyName
+        - lei
+        - kycSegment
+        - kycStatus
+        - riskLevel
+        - dateOfIncorporation
+        - documents
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Server-assigned unique identifier for the client record.
+        companyName:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Legal name of the client company.
+        lei:
+          type: string
+          minLength: 20
+          maxLength: 20
+          pattern: '^[A-Z0-9]{18}[0-9]{2}$'
+          description: Legal Entity Identifier (ISO 17442), exactly 20 characters.
+        kycSegment:
+          $ref: '#/components/schemas/KycSegment'
+        kycStatus:
+          $ref: '#/components/schemas/KycStatus'
+        avoxId:
+          type: string
+          nullable: true
+          description: Optional cross-reference identifier from the AVOX registry.
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        dateOfIncorporation:
+          type: string
+          format: date
+          description: Date the client company was legally incorporated.
+        documents:
+          type: array
+          description: Due-diligence documents on file for this client. May be empty.
+          items:
+            $ref: '#/components/schemas/Document'
+
+    ClientCreate:
+      type: object
+      description: Payload for registering a new client. The ID is assigned by the server.
+      required:
+        - companyName
+        - lei
+        - kycSegment
+        - kycStatus
+        - riskLevel
+        - dateOfIncorporation
+      properties:
+        companyName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        lei:
+          type: string
+          minLength: 20
+          maxLength: 20
+          pattern: '^[A-Z0-9]{18}[0-9]{2}$'
+        kycSegment:
+          $ref: '#/components/schemas/KycSegment'
+        kycStatus:
+          $ref: '#/components/schemas/KycStatus'
+        avoxId:
+          type: string
+          nullable: true
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        dateOfIncorporation:
+          type: string
+          format: date
+
+    ClientUpdate:
+      type: object
+      description: >-
+        Merge patch document for an existing client. Every field is
+        optional; only fields present in the request body are applied.
+      properties:
+        companyName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        lei:
+          type: string
+          minLength: 20
+          maxLength: 20
+          pattern: '^[A-Z0-9]{18}[0-9]{2}$'
+        kycSegment:
+          $ref: '#/components/schemas/KycSegment'
+        kycStatus:
+          $ref: '#/components/schemas/KycStatus'
+        avoxId:
+          type: string
+          nullable: true
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+        dateOfIncorporation:
+          type: string
+          format: date
+
+    ClientSummary:
+      type: object
+      description: Trimmed client projection returned by search results.
+      required: [id, companyName, lei, kycSegment, kycStatus, riskLevel]
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        lei:
+          type: string
+        kycSegment:
+          $ref: '#/components/schemas/KycSegment'
+        kycStatus:
+          $ref: '#/components/schemas/KycStatus'
+        riskLevel:
+          $ref: '#/components/schemas/RiskLevel'
+
+    ClientSearchResult:
+      type: object
+      description: A single page of a client search.
+      required: [items, totalCount, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClientSummary'
+        totalCount:
+          type: integer
+          format: int32
+          description: Total number of clients matching the filters, across all pages.
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+
+    ProblemDetails:
+      type: object
+      description: RFC 7807 problem details for an error response.
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri

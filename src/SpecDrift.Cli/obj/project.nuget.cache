@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "dmg/B4LT07c=",
+  "success": true,
+  "projectFilePath": "C:\\projects\\SpecDrift\\src\\SpecDrift.Cli\\SpecDrift.Cli.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.commandline\\3.0.0-preview.7.26381.103\\system.commandline.3.0.0-preview.7.26381.103.nupkg.sha512",
+    "C:\\Users\\Mariusz\\.nuget\\packages\\system.memory\\4.6.3\\system.memory.4.6.3.nupkg.sha512"
+  ],
+  "logs": []
+}
