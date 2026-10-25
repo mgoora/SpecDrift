@@ -7,7 +7,9 @@ namespace SpecDrift.Core.SemanticReview;
 /// collected to the LLM client in a single batch, and turns each "contradicts"
 /// verdict into an SD100 finding. Every SD100 finding is <see cref="Confidence.Probable"/>
 /// — never Certain, however confident the model sounds. A Consistent or Unknown
-/// verdict produces no finding: "the model couldn't tell" is not itself a drift.
+/// verdict produces no finding: "the model couldn't tell" is not itself a drift. Nor
+/// does a contradiction the model marks as restating an already-reported finding:
+/// the deterministic finding says it with certainty, so SD100 would only repeat it.
 /// </summary>
 public static class SemanticReviewer
 {
@@ -29,7 +31,7 @@ public static class SemanticReviewer
 
         foreach (var verdict in verdicts)
         {
-            if (verdict.Kind != SemanticVerdictKind.Contradicts)
+            if (verdict.Kind != SemanticVerdictKind.Contradicts || verdict.RestatesReported)
             {
                 continue;
             }

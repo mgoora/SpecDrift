@@ -45,6 +45,22 @@ public class DriftyApiWebApi2IntegrationTests
     }
 
     [Fact]
+    public void SemanticQuestionsCarryTheDeterministicFindingsAlreadyReportedForTheirEndpoint()
+    {
+        // Search changed method and made lei required: both are reported with certainty,
+        // so the model must see them to avoid reporting them again as SD100.
+        var search = Assert.Single(_semanticQuestions, q => q.RouteTemplate == "/api/clients/search");
+        var searchCodes = search.ReportedFindings!.Select(f => f.Code).ToList();
+        Assert.Contains("SD003", searchCodes);
+        Assert.Contains("SD006", searchCodes);
+
+        // Delete's 403 is reported too, but the archive-instead-of-delete contradiction
+        // is not among them: that one is SD100's to find.
+        var delete = Assert.Single(_semanticQuestions, q => q.Method == HttpVerb.Delete && q.RouteTemplate == "/api/clients/{id}");
+        Assert.Equal(["SD008"], delete.ReportedFindings!.Select(f => f.Code));
+    }
+
+    [Fact]
     public void ProducesExactlyTheNineDeterministicDriftsDocumentedInExpectedMd()
     {
         var codes = _findings.Select(f => f.Code).OrderBy(c => c, StringComparer.Ordinal).ToList();

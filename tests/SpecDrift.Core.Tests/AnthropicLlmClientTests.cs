@@ -89,6 +89,36 @@ public class AnthropicLlmClientTests
     }
 
     [Fact]
+    public async Task ListsReportedFindingsPerItemAndReadsBackTheRestatesReportedFlag()
+    {
+        var reported = new DriftFinding(
+            "SD006",
+            "Required-ness mismatch on `lei`",
+            Severity.Medium,
+            Confidence.Certain,
+            DialectChoice.Core,
+            new SpecCitation("#/paths/~1api~1widgets~1{id}/delete/parameters/0"),
+            new CodeCitation("Controllers/WidgetsController.cs", 10),
+            "The specification marks `lei` as optional, but the code makes it required.");
+        var question = Question(0) with { ReportedFindings = [reported] };
+
+        var responseJson = TextResponseEnvelope(
+            """{"verdicts":[{"index":0,"verdict":"contradicts","explanation":"lei is required.","restates_reported":true}]}""");
+        var handler = new StubHttpMessageHandler((_, _) => JsonResponse(HttpStatusCode.OK, responseJson));
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new AnthropicLlmClient(httpClient, ownsHttpClient: false);
+
+        var verdicts = await client.ReviewAsync([question]);
+
+        using var document = JsonDocument.Parse(handler.LastRequestBody!);
+        var userContent = document.RootElement.GetProperty("messages")[0].GetProperty("content").GetString();
+        Assert.Contains("SD006: The specification marks `lei` as optional, but the code makes it required.", userContent);
+
+        Assert.True(Assert.Single(verdicts).RestatesReported);
+    }
+
+    [Fact]
     public async Task AnUnrecognisedVerdictLabelBecomesUnknownRatherThanGuessed()
     {
         var responseJson = TextResponseEnvelope("""{"verdicts":[{"index":0,"verdict":"maybe","explanation":"?"}]}""");

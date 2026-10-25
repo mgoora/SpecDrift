@@ -372,14 +372,17 @@ dialect's real code actually lets it know.
 
 With an API key set, one more pass runs after the deterministic comparison: every
 matched endpoint that has both a spec description and readable handler code becomes a
-`SemanticQuestion`, all of them batched into a single call to
-`claude-haiku-4-5` (plain `HttpClient` against Anthropic's Messages API — no SDK
-dependency), asking whether the description still describes what the code does. A
-`contradicts` verdict becomes an SD100 finding, always `Low` severity and `Probable`
-confidence; `consistent` and `unknown` produce nothing. `ILlmClient` is faked in every
-test in the suite, so nothing in `dotnet test` ever makes a network call. The semantic
-review has not yet been run against the live API, which makes a real call to Anthropic
-the one path not yet verified end to end.
+`SemanticQuestion`, all of them batched into a single call to `claude-haiku-4-5`
+(plain `HttpClient` against Anthropic's Messages API — no SDK dependency), asking
+whether the description still describes what the code does. Each question also lists
+the deterministic findings already raised for that endpoint, and the model must
+classify every contradiction against that list: one that only restates a reported
+finding is dropped, because the deterministic finding already says it with certainty.
+A new `contradicts` verdict becomes an SD100 finding, always `Low` severity and
+`Probable` confidence; `consistent` and `unknown` produce nothing. `ILlmClient` is
+faked in every test in the suite, so nothing in `dotnet test` ever makes a network
+call. The semantic review has not yet been run against the live API, which makes a
+real call to Anthropic the one path not yet verified end to end.
 
 ## Design principles
 
@@ -450,7 +453,7 @@ silently folded into a finding.
 dotnet test SpecDrift.sln
 ```
 
-111 tests, all deterministic — `ILlmClient` is faked everywhere, so none of them ever
+115 tests, all deterministic — `ILlmClient` is faked everywhere, so none of them ever
 make a network call. Both fixtures are integration tests in their own right, asserted
 directly against their `EXPECTED.md`: `DriftyApiWebApi2IntegrationTests` and
 `DriftyApiCoreIntegrationTests` run the real pipeline against the real sample projects
