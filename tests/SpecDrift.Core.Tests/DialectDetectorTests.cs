@@ -33,7 +33,7 @@ public class DialectDetectorTests : IDisposable
         File.WriteAllText(Path.Combine(_projectDir, "Widgets.csproj"), """
             <Project Sdk="Microsoft.NET.Sdk.Web">
               <PropertyGroup>
-                <TargetFramework>net9.0</TargetFramework>
+                <TargetFramework>net10.0</TargetFramework>
               </PropertyGroup>
             </Project>
             """);

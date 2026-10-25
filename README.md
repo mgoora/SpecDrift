@@ -27,7 +27,7 @@ dotnet build SpecDrift.sln
 dotnet run --project src/SpecDrift.Cli -- --spec openapi.yaml --project src/Api --no-llm
 ```
 
-Prerequisites: the .NET SDK matching the projects' target framework (`net9.0` here —
+Prerequisites: the .NET SDK matching the projects' target framework (`net10.0` here —
 check with `dotnet --list-sdks` before assuming). `--no-llm` runs the fully
 deterministic pipeline with no API key and no network access; drop it once you have
 `SPECDRIFT_API_KEY` set to also get SD100 (see [Semantic review](#semantic-review-sd100)).
@@ -62,7 +62,7 @@ your shell history.
 ## Two toolchains
 
 Spec Drift itself builds with `dotnet build` / `dotnet test`, targeting whatever SDK
-`dotnet --list-sdks` reports (`net9.0` as built). The **projects it analyses** are a
+`dotnet --list-sdks` reports (`net10.0` as built). The **projects it analyses** are a
 separate concern with their own toolchains, and neither is built by Spec Drift itself
 — it only reads their source as text:
 

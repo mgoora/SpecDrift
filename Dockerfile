@@ -1,7 +1,7 @@
 # SpecDrift never builds or executes the project it analyses — it only needs its own
 # runtime. The build stage exists solely to publish the CLI itself.
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Restore from just the project files first, so this layer is cached across
@@ -16,7 +16,7 @@ RUN dotnet publish src/SpecDrift.Cli/SpecDrift.Cli.csproj \
     --no-restore \
     --output /app
 
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 
 # A dedicated, unprivileged user — SPECDRIFT_API_KEY (if the caller passes one) is
 # supplied at `docker run` time via -e, never baked into an image layer.
