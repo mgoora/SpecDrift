@@ -1,5 +1,7 @@
 # Spec Drift
 
+[![CI](https://github.com/mgoora/SpecDrift/actions/workflows/ci.yml/badge.svg)](https://github.com/mgoora/SpecDrift/actions/workflows/ci.yml)
+
 **Finds where an API's OpenAPI contract and its C# implementation have quietly
 diverged — before a consuming team's integration breaks.**
 
@@ -108,9 +110,9 @@ docker run --rm -v "$(pwd)":/work -e SPECDRIFT_API_KEY specdrift \
 ```
 
 Multi-stage build — the final image carries only the .NET runtime, never the SDK —
-and runs as a dedicated non-root user. `SPECDRIFT_API_KEY` is supplied at `docker run`
-time only; it is never an `ARG` or `ENV` default, so it can never end up baked into an
-image layer.
+and runs as the image's built-in non-root `app` user. `SPECDRIFT_API_KEY` is supplied
+at `docker run` time only; it is never an `ARG` or `ENV` default, so it can never end
+up baked into an image layer.
 
 ## Detection rules
 

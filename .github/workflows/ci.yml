@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is where the tool is developed; Linux is where the Docker image runs.
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0'
+
+      - name: Restore
+        run: dotnet restore SpecDrift.sln
+
+      - name: Build
+        run: dotnet build SpecDrift.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test SpecDrift.sln --configuration Release --no-build
+
+  docker:
+    name: Docker image finds the planted drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build image
+        run: docker build -t specdrift .
+
+      - name: Run against the ASP.NET Core fixture
+        # Exit code 1 means "drift found", which is the expected outcome here;
+        # 0 or 2 would mean the fixture or the tool is broken.
+        run: |
+          status=0
+          docker run --rm -v "$PWD/samples:/work:ro" specdrift \
+            --spec /work/openapi.yaml --project /work/DriftyApi.Core --no-llm \
+            > report.md || status=$?
+          cat report.md
+          echo "Exit code: $status"
+          test "$status" -eq 1
+          grep -q -- "- Total: 9" report.md

@@ -18,13 +18,12 @@ RUN dotnet publish src/SpecDrift.Cli/SpecDrift.Cli.csproj \
 
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 
-# A dedicated, unprivileged user — SPECDRIFT_API_KEY (if the caller passes one) is
-# supplied at `docker run` time via -e, never baked into an image layer.
-RUN groupadd --gid 1000 specdrift \
- && useradd --uid 1000 --gid specdrift --no-create-home --shell /usr/sbin/nologin specdrift
-
 WORKDIR /app
 COPY --from=build /app .
 
-USER specdrift
+# Run as the unprivileged `app` user that every .NET 8+ image ships with, rather
+# than creating one: .NET 10 images are Ubuntu-based and UID/GID 1000 is already
+# taken there. SPECDRIFT_API_KEY (if the caller passes one) is supplied at
+# `docker run` time via -e, never baked into an image layer.
+USER $APP_UID
 ENTRYPOINT ["dotnet", "SpecDrift.Cli.dll"]
