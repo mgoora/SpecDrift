@@ -66,6 +66,29 @@ public class AnthropicLlmClientTests
     }
 
     [Fact]
+    public async Task SystemPromptLeavesStructuralChecksToTheDeterministicStages()
+    {
+        // Guards the boundary between stages: without it the model re-reports structural
+        // drift (method, parameters, status codes) that SD001-SD009 already cover.
+        var responseJson = TextResponseEnvelope("""{"verdicts":[]}""");
+        var handler = new StubHttpMessageHandler((_, _) => JsonResponse(HttpStatusCode.OK, responseJson));
+
+        using var httpClient = new HttpClient(handler);
+        using var client = new AnthropicLlmClient(httpClient, ownsHttpClient: false);
+
+        await client.ReviewAsync([Question(0)]);
+
+        using var document = JsonDocument.Parse(handler.LastRequestBody!);
+        var systemPrompt = document.RootElement.GetProperty("system").GetString();
+
+        Assert.Contains("Do not judge or mention any of them", systemPrompt);
+        foreach (var structuralCheck in new[] { "HTTP method", "parameters", "status codes", "response types" })
+        {
+            Assert.Contains(structuralCheck, systemPrompt);
+        }
+    }
+
+    [Fact]
     public async Task AnUnrecognisedVerdictLabelBecomesUnknownRatherThanGuessed()
     {
         var responseJson = TextResponseEnvelope("""{"verdicts":[{"index":0,"verdict":"maybe","explanation":"?"}]}""");

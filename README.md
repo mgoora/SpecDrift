@@ -450,7 +450,7 @@ silently folded into a finding.
 dotnet test SpecDrift.sln
 ```
 
-110 tests, all deterministic — `ILlmClient` is faked everywhere, so none of them ever
+111 tests, all deterministic — `ILlmClient` is faked everywhere, so none of them ever
 make a network call. Both fixtures are integration tests in their own right, asserted
 directly against their `EXPECTED.md`: `DriftyApiWebApi2IntegrationTests` and
 `DriftyApiCoreIntegrationTests` run the real pipeline against the real sample projects

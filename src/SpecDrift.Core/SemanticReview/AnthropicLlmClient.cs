@@ -103,12 +103,25 @@ public sealed class AnthropicLlmClient : ILlmClient, IDisposable
         Messages: [new MessageParam("user", BuildUserContent(questions))],
         OutputConfig: new OutputConfig(new OutputFormat("json_schema", VerdictsSchema)));
 
+    // The deterministic stages already report structural drift with certainty. Without
+    // this boundary the model re-reports it as SD100 (seen on the first live run: a
+    // GET-vs-POST and a required parameter came back as "contradictions"), spending the
+    // one non-deterministic stage on questions the parser has already answered.
     private static string BuildSystemPrompt() =>
         "You review whether an OpenAPI endpoint's documented description still matches what its " +
         "handler code actually does. For each numbered item below you are given the specification's " +
-        "description and the full source of the C# action method implementing it. For each item, decide " +
-        "whether the description contradicts the code's actual behaviour, is consistent with it, or " +
-        "whether you cannot tell from what's given. Respond only with the requested structured output.";
+        "description and the full source of the C# action method implementing it.\n\n" +
+        "A separate deterministic stage has already compared each endpoint's structure: HTTP method, " +
+        "route, parameters and whether they are required, status codes, and response types. It reports " +
+        "those differences itself. Do not judge or mention any of them, and treat the item heading and " +
+        "the method's attributes and signature as context only.\n\n" +
+        "Judge only the behaviour the description promises against the behaviour the method body " +
+        "implements: what the operation does to data, what it returns in substance, its side effects, " +
+        "and any guarantees the description states, such as an action being permanent.\n\n" +
+        "For each item answer contradicts if the body's behaviour clearly contradicts something the " +
+        "description states, consistent if nothing it states is contradicted, or unknown if the code " +
+        "shown is not enough to tell. A difference that falls only under the structural checks above " +
+        "is consistent, not a contradiction. Respond only with the requested structured output.";
 
     private static string BuildUserContent(IReadOnlyList<SemanticQuestion> questions)
     {
