@@ -5,7 +5,6 @@ using SpecDrift.Core.Model;
 using SpecDrift.Core.Reporting;
 using SpecDrift.Core.SemanticReview;
 using SpecDrift.Core.SpecReading;
-using Microsoft.Extensions.Configuration;
 
 var parseResult = CliOptionsParser.Parse(args, Console.Error);
 if (parseResult.Options is null)
@@ -103,16 +102,5 @@ catch (Exception ex)
 static string? ReadApiKey()
 {
     var apiKey = Environment.GetEnvironmentVariable("SPECDRIFT_API_KEY");
-    if (!string.IsNullOrWhiteSpace(apiKey))
-    {
-        return apiKey;
-    }
-
-    var configuration = new ConfigurationBuilder()
-        .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json", optional: true)
-        .AddEnvironmentVariables()
-        .Build();
-
-    return configuration["SpecDrift:ApiKey"] ?? configuration["ApiKey"];
+    return string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
 }
