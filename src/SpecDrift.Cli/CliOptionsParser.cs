@@ -4,7 +4,7 @@ using SpecDrift.Core.Model;
 namespace SpecDrift.Cli;
 
 /// <summary>
-/// Builds the CLI contract from <c>PROMPT.md</c> and turns raw arguments into a
+/// Builds the CLI contract from <c>docs/ai-workflow/PROMPT.md</c> and turns raw arguments into a
 /// <see cref="CliParseResult"/>. Parse errors are reported and mapped to exit code 2
 /// here rather than left to System.CommandLine's default (1), because 1 is reserved
 /// for "there are findings at or above --min-severity".

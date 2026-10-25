@@ -161,7 +161,7 @@ public class DriftyApiWebApi2IntegrationTests
         // CreateClient's success path returns ResponseMessage(response), where
         // `response`'s HttpStatusCode.Created lives on an earlier, separate statement
         // bound to a local variable — a genuine blind spot the reader declares rather
-        // than guesses at, exactly as PROMPT.md's "known undeterminable cases" expects.
+        // than guesses at, exactly as docs/ai-workflow/PROMPT.md's "known undeterminable cases" expects.
         Assert.Contains(_codeResult.Limitations, l => l.Contains("CreateClient") && l.Contains("could not be determined"));
     }
 

@@ -4,7 +4,7 @@ namespace SpecDrift.Cli;
 
 /// <summary>
 /// The tool's parsed, validated invocation — the CLI contract in
-/// <c>PROMPT.md</c> turned into data. <see cref="Dialect"/> null means
+/// <c>docs/ai-workflow/PROMPT.md</c> turned into data. <see cref="Dialect"/> null means
 /// auto-detect; <see cref="Out"/> null means write the report to stdout.
 /// </summary>
 public sealed record CliOptions(

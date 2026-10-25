@@ -17,7 +17,7 @@ code; it never writes to either.
 
 No web UI, no dashboard, no CI/CD integration, no auto-fixing of the spec, no
 languages beyond C#, no frameworks beyond the two dialects above. If a request seems
-to need one of these, it doesn't — see [`PROMPT.md`](PROMPT.md) for the brief this was
+to need one of these, it doesn't — see [`PROMPT.md`](docs/ai-workflow/PROMPT.md) for the brief this was
 built against.
 
 ## Quick start
@@ -446,6 +446,9 @@ samples/
   DriftyApi/             Web API 2 fixture (.NET Framework 4.8) + EXPECTED.md
   DriftyApi.Core/        ASP.NET Core fixture (SDK-style) + EXPECTED.md
   openapi.yaml           The one spec both fixtures share
+scripts/
+  set-api-key.ps1        Sets SPECDRIFT_API_KEY for the current Windows user
+docs/ai-workflow/        How the tool was built with an AI coding agent
+CLAUDE.md                Rules the coding agent follows in every session
 Dockerfile
-PROMPT.md                The brief this was built against
 ```
