@@ -55,6 +55,10 @@ LLM call). The API key comes from the `SPECDRIFT_API_KEY` environment variable o
 never a flag, never a file, never a default — and a missing key with the LLM stage
 enabled is a clear error naming the variable, not a stack trace.
 
+On Windows, `scripts\set-api-key.ps1` sets it once for your user account,
+prompting for the key with hidden input so it never lands in a file or in
+your shell history.
+
 ## Two toolchains
 
 Spec Drift itself builds with `dotnet build` / `dotnet test`, targeting whatever SDK
