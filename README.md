@@ -1,5 +1,7 @@
 # Spec Drift
 
+[![CI](https://github.com/mgoora/SpecDrift/actions/workflows/ci.yml/badge.svg)](https://github.com/mgoora/SpecDrift/actions/workflows/ci.yml)
+
 **Finds where an API's OpenAPI contract and its C# implementation have quietly
 diverged — before a consuming team's integration breaks.**
 
