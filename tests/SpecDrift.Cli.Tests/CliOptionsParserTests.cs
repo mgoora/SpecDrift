@@ -27,6 +27,19 @@ public class CliOptionsParserTests : IDisposable
         Assert.Equal(2, result.ExitCode);
     }
 
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("--version")]
+    public void HelpAndVersion_ReturnExitCodeZeroAndNoOptions(string flag)
+    {
+        // These are the paths that hand control to System.CommandLine's own actions,
+        // so they are the ones a change of library version is most likely to break.
+        var result = CliOptionsParser.Parse([flag], TextWriter.Null);
+
+        Assert.Null(result.Options);
+        Assert.Equal(0, result.ExitCode);
+    }
+
     [Fact]
     public void NonexistentSpecPath_ReturnsExitCodeTwo()
     {
