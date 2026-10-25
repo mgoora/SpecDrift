@@ -1,24 +1,43 @@
 # Spec Drift
 
-A .NET CLI that compares an OpenAPI specification against a C# web API's source code
-and reports where the two have diverged — endpoints the spec promises that the code
-doesn't implement, parameters the code accepts that the spec never mentions, status
-codes returned but undocumented, and the rarer case where everything lines up
-structurally but the spec's own prose no longer describes what the handler does.
+**Finds where an API's OpenAPI contract and its C# implementation have quietly
+diverged — before a consuming team's integration breaks.**
+
+Spec Drift reads an OpenAPI document and the source of an ASP.NET Web API 2 or
+ASP.NET Core project, and reports every divergence with a citation on both sides:
+
+```markdown
+### SD004 · Undocumented parameter `riskLevel`
+**Severity** Medium · **Confidence** Certain · **Dialect** WebApi2
+**Code** `Controllers/ClientsController.cs:148`
+**Spec** `#/paths/~1api~1clients~1search/get`
+```
+
+## Design in four lines
+
+- **Parse first, ask the model last.** Nine of the ten checks are deterministic; a
+  language model is used only for the one question a parser cannot answer.
+- **Every finding cites both sides** — a source `file:line` and a spec JSON Pointer —
+  so it can be verified in seconds without trusting the tool.
+- **"Undetermined" is a valid answer.** Constructs that cannot be resolved statically
+  are listed in the report, never guessed.
+- **One walker, two dialects.** Framework differences are data in a descriptor, not a
+  second code path.
+
+[Why these choices](#design-principles) · [Sample report](#sample-output) ·
+[Quick start](#quick-start) · [How it was built](docs/ai-workflow/README.md)
+
+## Scope
 
 It analyses **two dialects**: ASP.NET Web API 2 (.NET Framework) and ASP.NET Core.
 Legacy Web API 2 estates are where drift is worst and where almost no tooling exists
 for it, so Web API 2 is the primary target, not an afterthought.
 
 It is a **drift detector**, not a generator or a linter. It reads the spec and the
-code; it never writes to either.
-
-## What it isn't
-
-No web UI, no dashboard, no CI/CD integration, no auto-fixing of the spec, no
-languages beyond C#, no frameworks beyond the two dialects above. If a request seems
-to need one of these, it doesn't — see [`PROMPT.md`](docs/ai-workflow/PROMPT.md) for the brief this was
-built against.
+code; it never writes to either. No web UI, no dashboard, no CI/CD integration, no
+auto-fixing of the spec, no languages beyond C#, no frameworks beyond the two dialects
+above — all of them excluded on purpose, as listed in
+[the build brief](docs/ai-workflow/PROMPT.md).
 
 ## Quick start
 
@@ -58,6 +77,9 @@ enabled is a clear error naming the variable, not a stack trace.
 On Windows, `scripts\set-api-key.ps1` sets it once for your user account,
 prompting for the key with hidden input so it never lands in a file or in
 your shell history.
+If PowerShell reports that the script is not digitally signed — which happens when it
+was downloaded through a browser rather than cloned — run
+`Unblock-File .\scripts\set-api-key.ps1` first.
 
 ## Two toolchains
 
@@ -353,9 +375,9 @@ matched endpoint that has both a spec description and readable handler code beco
 dependency), asking whether the description still describes what the code does. A
 `contradicts` verdict becomes an SD100 finding, always `Low` severity and `Probable`
 confidence; `consistent` and `unknown` produce nothing. `ILlmClient` is faked in every
-test in the suite — nothing in `dotnet test` ever makes a network call, and this
-session never had a `SPECDRIFT_API_KEY` to run it against the real API with, so the
-one thing not yet verified end to end is a real call to Anthropic itself.
+test in the suite, so nothing in `dotnet test` ever makes a network call. The semantic
+review has not yet been run against the live API, which makes a real call to Anthropic
+the one path not yet verified end to end.
 
 ## Design principles
 
