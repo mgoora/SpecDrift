@@ -32,9 +32,10 @@ public sealed class AnthropicLlmClient : ILlmClient, IDisposable
                 "properties": {
                   "index": { "type": "integer" },
                   "verdict": { "type": "string", "enum": ["contradicts", "consistent", "unknown"] },
-                  "explanation": { "type": "string" }
+                  "explanation": { "type": "string" },
+                  "restates_reported": { "type": "boolean" }
                 },
-                "required": ["index", "verdict", "explanation"],
+                "required": ["index", "verdict", "explanation", "restates_reported"],
                 "additionalProperties": false
               }
             }
@@ -103,10 +104,12 @@ public sealed class AnthropicLlmClient : ILlmClient, IDisposable
         Messages: [new MessageParam("user", BuildUserContent(questions))],
         OutputConfig: new OutputConfig(new OutputFormat("json_schema", VerdictsSchema)));
 
-    // The deterministic stages already report structural drift with certainty. Without
-    // this boundary the model re-reports it as SD100 (seen on the first live run: a
-    // GET-vs-POST and a required parameter came back as "contradictions"), spending the
-    // one non-deterministic stage on questions the parser has already answered.
+    // The deterministic stages already report structural drift with certainty. On live
+    // runs the model re-reported it as SD100 (a GET-vs-POST change and a required
+    // parameter came back as "contradictions") even when the prompt told it not to.
+    // An instruction alone did not hold, so each item now lists the findings already
+    // reported for it, and the output schema makes the model classify every
+    // contradiction against that list; SemanticReviewer drops the restated ones.
     private static string BuildSystemPrompt() =>
         "You review whether an OpenAPI endpoint's documented description still matches what its " +
         "handler code actually does. For each numbered item below you are given the specification's " +
@@ -120,8 +123,12 @@ public sealed class AnthropicLlmClient : ILlmClient, IDisposable
         "and any guarantees the description states, such as an action being permanent.\n\n" +
         "For each item answer contradicts if the body's behaviour clearly contradicts something the " +
         "description states, consistent if nothing it states is contradicted, or unknown if the code " +
-        "shown is not enough to tell. A difference that falls only under the structural checks above " +
-        "is consistent, not a contradiction. Respond only with the requested structured output.";
+        "shown is not enough to tell.\n\n" +
+        "Some items list differences the deterministic stage has already reported for that endpoint. " +
+        "Set restates_reported to true when everything you found contradictory is one of those listed " +
+        "differences, or follows directly from one, described in other words. Set it to false when you " +
+        "found at least one contradiction that is not among them, and always for consistent and unknown " +
+        "verdicts. Respond only with the requested structured output.";
 
     private static string BuildUserContent(IReadOnlyList<SemanticQuestion> questions)
     {
@@ -139,6 +146,17 @@ public sealed class AnthropicLlmClient : ILlmClient, IDisposable
             builder.AppendLine(question.CodeSourceText);
             builder.AppendLine("```");
             builder.AppendLine();
+
+            if (question.ReportedFindings is { Count: > 0 } reported)
+            {
+                builder.AppendLine("Already reported for this endpoint by the deterministic stage:");
+                foreach (var finding in reported)
+                {
+                    builder.AppendLine($"- {finding.Code}: {finding.Detail}");
+                }
+
+                builder.AppendLine();
+            }
         }
 
         return builder.ToString();
@@ -152,7 +170,8 @@ public sealed class AnthropicLlmClient : ILlmClient, IDisposable
             "consistent" => SemanticVerdictKind.Consistent,
             _ => SemanticVerdictKind.Unknown // an unrecognised label is Unknown, not guessed at
         },
-        dto.Explanation);
+        dto.Explanation,
+        dto.RestatesReported);
 
     private static string? TryReadErrorMessage(string body)
     {

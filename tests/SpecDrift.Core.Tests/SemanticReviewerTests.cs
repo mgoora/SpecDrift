@@ -33,6 +33,20 @@ public class SemanticReviewerTests
         Assert.Equal("The handler archives rather than deletes.", finding.Detail);
     }
 
+    [Fact]
+    public async Task AContradictionThatRestatesAReportedFindingProducesNoFinding()
+    {
+        // The deterministic finding already reports it with certainty; an SD100 on top
+        // would only repeat it with less confidence.
+        var client = new FakeLlmClient([
+            new SemanticVerdict(0, SemanticVerdictKind.Contradicts, "The handler is POST, not GET.", RestatesReported: true)
+        ]);
+
+        var findings = await SemanticReviewer.ReviewAsync([Question(0)], client, DialectChoice.WebApi2);
+
+        Assert.Empty(findings);
+    }
+
     [Theory]
     [InlineData(SemanticVerdictKind.Consistent)]
     [InlineData(SemanticVerdictKind.Unknown)]

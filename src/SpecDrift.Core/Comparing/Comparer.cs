@@ -37,10 +37,11 @@ public static class Comparer
             {
                 var specEndpoint = specAtRoute.First(e => e.Method == method);
                 var codeEndpoint = codeAtRoute.First(e => e.Method == method);
+                var firstFindingForEndpoint = findings.Count;
 
                 CompareParameters(specEndpoint, codeEndpoint, dialect, findings);
                 CompareResponses(specEndpoint, codeEndpoint, dialect, specResult.Schemas, codeResult.Types, findings);
-                CollectSemanticQuestion(specEndpoint, codeEndpoint, semanticQuestions);
+                CollectSemanticQuestion(specEndpoint, codeEndpoint, findings[firstFindingForEndpoint..], semanticQuestions);
             }
 
             var unmatchedSpec = specAtRoute.Where(e => !matchedMethods.Contains(e.Method)).ToList();
@@ -55,13 +56,14 @@ public static class Comparer
             if (unmatchedSpec.Count == 1 && unmatchedCode.Count == 1
                 && NamesLikelyMatch(unmatchedSpec[0].OperationName, unmatchedCode[0].OperationName))
             {
+                var firstFindingForEndpoint = findings.Count;
                 findings.Add(BuildMethodMismatch(unmatchedSpec[0], unmatchedCode[0], dialect));
 
                 // Still the same operation underneath the method change — its
                 // parameters and response can independently disagree too.
                 CompareParameters(unmatchedSpec[0], unmatchedCode[0], dialect, findings);
                 CompareResponses(unmatchedSpec[0], unmatchedCode[0], dialect, specResult.Schemas, codeResult.Types, findings);
-                CollectSemanticQuestion(unmatchedSpec[0], unmatchedCode[0], semanticQuestions);
+                CollectSemanticQuestion(unmatchedSpec[0], unmatchedCode[0], findings[firstFindingForEndpoint..], semanticQuestions);
                 continue;
             }
 
@@ -91,9 +93,14 @@ public static class Comparer
     /// question structural comparison cannot itself answer. Silently skipped when
     /// either side has nothing to ask about (an endpoint with no description, or code
     /// whose source somehow wasn't captured) rather than asking a question with half
-    /// its evidence missing.
+    /// its evidence missing. The endpoint's deterministic findings travel with the
+    /// question: the model needs to see what is already reported to avoid repeating it.
     /// </summary>
-    private static void CollectSemanticQuestion(ApiEndpoint specEndpoint, ApiEndpoint codeEndpoint, List<SemanticQuestion> questions)
+    private static void CollectSemanticQuestion(
+        ApiEndpoint specEndpoint,
+        ApiEndpoint codeEndpoint,
+        IReadOnlyList<DriftFinding> reportedFindings,
+        List<SemanticQuestion> questions)
     {
         if (string.IsNullOrWhiteSpace(specEndpoint.SpecDescription) || string.IsNullOrWhiteSpace(codeEndpoint.CodeSourceText))
         {
@@ -107,7 +114,8 @@ public static class Comparer
             specEndpoint.SpecDescription,
             codeEndpoint.CodeSourceText,
             specEndpoint.Citation,
-            codeEndpoint.Citation));
+            codeEndpoint.Citation,
+            reportedFindings));
     }
 
     private static void CompareParameters(ApiEndpoint specEndpoint, ApiEndpoint codeEndpoint, DialectChoice dialect, List<DriftFinding> findings)

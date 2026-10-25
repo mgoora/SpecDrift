@@ -45,4 +45,5 @@ internal sealed record VerdictsPayload(
 internal sealed record VerdictDto(
     [property: JsonPropertyName("index")] int Index,
     [property: JsonPropertyName("verdict")] string Verdict,
-    [property: JsonPropertyName("explanation")] string Explanation);
+    [property: JsonPropertyName("explanation")] string Explanation,
+    [property: JsonPropertyName("restates_reported")] bool RestatesReported);
