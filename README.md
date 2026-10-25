@@ -381,8 +381,33 @@ finding is dropped, because the deterministic finding already says it with certa
 A new `contradicts` verdict becomes an SD100 finding, always `Low` severity and
 `Probable` confidence; `consistent` and `unknown` produce nothing. `ILlmClient` is
 faked in every test in the suite, so nothing in `dotnet test` ever makes a network
-call. The semantic review has not yet been run against the live API, which makes a
-real call to Anthropic the one path not yet verified end to end.
+call.
+
+**Live results.** Against both fixtures and the real API, the soft delete on
+`DELETE /api/clients/{id}` — documented as permanent, implemented as an archive — was
+reported as SD100 in all 12 runs, in both dialects, including two runs with the
+handler's explanatory comment removed, so the model read it from the code rather than
+the comment. Once reported findings were passed to the model, the SD008 already raised
+for the same endpoint never displaced it. A real finding, from the ASP.NET Core fixture:
+
+```markdown
+### SD100 · Description may contradict behavior: Delete /api/clients/{id}
+**Severity** Low · **Confidence** Probable · **Dialect** Core
+**Code** `Controllers/ClientsController.cs:97`
+**Spec** `#/paths/~1api~1clients~1{id}/delete`
+
+The specification states the action 'permanently removes the client record' and that
+'once a client has been deleted its ID may not be looked up again.' However, the code
+only archives the client by setting KycStatus to Archived rather than removing it from
+the registry. The client record remains queryable, directly contradicting the
+permanent deletion guarantee.
+```
+
+The first version re-reported the search endpoint's method change and required `lei`
+parameter as SD100 in every run, and adding "do not judge these" to the prompt changed
+nothing. Listing the reported findings and requiring `restates_reported` cut that to
+1 duplicate in 4 runs. The remaining duplicate is the kind of error a `Probable`
+confidence exists to flag.
 
 ## Design principles
 

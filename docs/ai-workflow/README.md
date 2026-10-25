@@ -42,12 +42,30 @@ what was asked for.
 - **No network calls in tests.** The model client sits behind an interface and is faked
   in every test.
 
+## What the first live runs taught
+
+The semantic review was built and tested against a fake model client. The first runs
+against the real API found the soft delete every time, and also re-reported structural
+drift the deterministic stages had already found — a method change and a required
+parameter.
+
+The first fix was an instruction: the prompt told the model not to judge method,
+parameters, status codes or response types. It changed nothing; the duplicates came
+back in every run, citing the very attributes the prompt said to ignore. The second fix
+was structural: each question now carries the findings already reported for its
+endpoint, the output schema requires the model to mark a contradiction that restates
+one of them, and the code drops those. That reduced the duplicate to 1 run in 4.
+
+The lesson carried into the rules for future work: a boundary between a deterministic
+stage and a model is enforced by what the model is given and what the code accepts
+back, not by asking.
+
 ## Known gaps
 
 - The work was reviewed slice by slice but committed in bulk, so the early git history
   does not show the individual slices. Later changes are committed one concern at a time.
-- The semantic review (SD100) was built and tested against a fake model client and has
-  not yet been run against the live API.
+- The duplicate described above still appears occasionally. The model is called with
+  its default temperature; a lower one is the next thing to measure.
 - The project is small. Failure modes that only appear on a large codebase — such as
   the agent contradicting its own earlier decisions as the context grows — had no room
   to show up here, so this process is proven at this size only.
